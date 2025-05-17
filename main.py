@@ -13,7 +13,9 @@ llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 
 
 initial_actions = [
-	{'open_tab': {'url': 'https://www.linkedin.com/in/nicoll-fern%C3%A1ndez-90a350190/'}},
+	{'open_tab': {'url': 'https://www.linkedin.com/in/nicole-murillo-fonseca-1b53582b3/'}},
+    {'scroll_down': {'amount': 1000}}
+
 ]
 
 async def main():
@@ -27,7 +29,9 @@ async def main():
 		extend_planner_system_message=extend_planner_system_message
     )
     result = await agent.run()
-    print(result.final_result())
+    pre_parsed_data = result.final_result()
     await browser.close()
+    data: Profile = Profile.model_validate_json(pre_parsed_data)
+    print(data)
 
 asyncio.run(main())
