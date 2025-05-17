@@ -25,13 +25,14 @@ browser = Browser(
     config=BrowserConfig(
         # Specify the path to your Chrome executable
         chrome_instance_path='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',  # For Windows
-        # For MAC, an example path would be: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-        # For Linux, an example path would be: '/usr/bin/google-chrome'
-        extra_browser_args=[
-            '--user-data-dir=C:\\Users\\juans\\AppData\\Local\\Google\\Chrome\\User Data', # Corrected path
-            '--profile-directory=Default',
-            '--remote-debugging-port=9222'  # Optional but useful
-        ]
+    #     chrome_remote_debugging_port=9223, # Use a specific, non-default, non-zero port
+    #     # For MAC, an example path would be: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    #     # For Linux, an example path would be: '/usr/bin/google-chrome'
+    #     extra_browser_args=[
+    #         '--user-data-dir=C:\\Users\\juans\\AppData\\Local\\Google\\Chrome\\User Data', # Corrected path
+    #         '--profile-directory=Default',
+    #         # '--remote-debugging-port=0'  # Removed from here
+    #     ]
     )   
 )
 initial_actions = [
