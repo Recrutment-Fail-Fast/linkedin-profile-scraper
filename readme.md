@@ -15,3 +15,8 @@ uv install browser-use
 playwright install
 
 chrome://version/
+
+
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\Users\juans\AppData\Local\Google\Chrome\User Data"
+
+ & "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\Users\juans\AppData\Local\Google\Chrome\User Data\Profile 4"

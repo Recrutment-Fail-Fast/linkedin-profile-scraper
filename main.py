@@ -1,4 +1,4 @@
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from browser_use import Agent, Browser, BrowserConfig, Controller
 from dotenv import load_dotenv
 load_dotenv()
@@ -6,7 +6,6 @@ load_dotenv()
 import asyncio
 from pydantic import BaseModel
 from typing import List
-# Define the output format as a Pydantic model
 class Profile(BaseModel):
     name: str
     title: str
@@ -14,34 +13,36 @@ class Profile(BaseModel):
 
 
 
-class Posts(BaseModel):
-	posts: List[Profile]
 
 
-controller = Controller(output_model=Posts)
-llm = ChatOpenAI(model="gpt-4o")
+controller = Controller(output_model=Profile)
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 
+# main.py
+# ...
 browser = Browser(
     config=BrowserConfig(
-        # Specify the path to your Chrome executable
-        chrome_instance_path='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',  # For Windows
-    #     chrome_remote_debugging_port=9223, # Use a specific, non-default, non-zero port
-    #     # For MAC, an example path would be: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-    #     # For Linux, an example path would be: '/usr/bin/google-chrome'
-    #     extra_browser_args=[
-    #         '--user-data-dir=C:\\Users\\juans\\AppData\\Local\\Google\\Chrome\\User Data', # Corrected path
-    #         '--profile-directory=Default',
-    #         # '--remote-debugging-port=0'  # Removed from here
-    #     ]
-    )   
+        browser_binary_path="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        chrome_remote_debugging_port=9223,
+        extra_browser_args=[
+            "--user-data-dir=C:\\Users\\juans\\ChromeTestEnvironment",
+            "--profile-directory=MyTestProfile"
+        ]
+    )
 )
+
+prompt = """
+Go to the profile of camila rivera and get the name, title and location
+"""
+
+
 initial_actions = [
 	{'open_tab': {'url': 'https://www.linkedin.com/in/camila-rivera-arenas-68361b2aa/'}},
 ]
 
 async def main():
     agent = Agent(
-        task="go to camila's Linkedin and get the name and title",
+        task=prompt,
         llm=llm,
         browser=browser,
 		controller=controller,
