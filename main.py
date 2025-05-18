@@ -22,7 +22,7 @@ async def main():
 		controller=controller,
 		initial_actions=initial_actions,
 		override_system_message=override_system_message,
-		# extend_planner_system_message=extend_planner_system_message
+		extend_planner_system_message=extend_planner_system_message
     )
     result = await agent.run()
     pre_parsed_data = result.final_result()
