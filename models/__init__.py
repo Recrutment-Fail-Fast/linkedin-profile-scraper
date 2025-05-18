@@ -1,2 +1,2 @@
 from .profile import Profile
-from .scrape_request import ScrapeRequest
+from .prospect import Prospect

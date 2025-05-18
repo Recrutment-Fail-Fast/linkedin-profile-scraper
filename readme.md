@@ -1,97 +1,111 @@
+# Linkedin Profile Scraper
 
+This project scrapes LinkedIn profiles using Playwright and integrates with Google AI and Supabase.
 
+---
 
+## Setup Instructions
 
+### 1. Install `uv` (Python package manager)
 
-irm https://astral.sh/uv/install.ps1 | iex
-
-
-uv venv   
-
-.venv\Scripts\activate  
-
-uv install browser-use       
-
-playwright install
-
-chrome://version/
-
-
-## Troubleshooting Chrome Remote Debugging Connection Issues
-
-If you encounter `ERR_CONNECTION_REFUSED` when your script (using `browser-use` or Playwright) tries to connect to Chrome's remote debugging port (e.g., `http://localhost:9223/json`), it means Chrome launched but didn't activate its debugging service on that port.
-
-This often happens when attempting to use an existing Chrome profile that might have conflicting states, settings, or lock files.
-
-**Key Solution: Use a Dedicated Clean Profile for Automation**
-
-The most reliable solution is to configure `browser-use` to launch Chrome with a dedicated, clean user data directory and profile. This isolates the automated browser session from your regular browsing profiles.
-
-**Steps:**
-
-1.  **Ensure ALL Chrome Instances are Closed:** Before running your script, use Task Manager (Ctrl+Shift+Esc) to terminate every `chrome.exe` process. This is crucial as existing Chrome instances can interfere with how new ones are launched with debugging flags.
-
-run Stop-Process -Name chrome -Force in powershell
-
-or tasklist /FI "IMAGENAME eq chrome.exe" if you want to verify any chrome instance is running
-
-
-2.  **Configure `browser-use` in your Python script:**
-    Modify your `Browser` initialization to specify a `browser_binary_path`, a `chrome_remote_debugging_port`, and `extra_browser_args` to define a new user data directory and profile for automation.
-
-    ```python
-    from browser_use import Browser, BrowserConfig
-
-    # ... other imports and setup ...
-
-    chrome_executable_path = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"  # Adjust if your path is different
-    # Define a new, clean directory for this automation's user data
-    automation_user_data_dir = "C:\\Users\\YourUserName\\AutomationChromeProfile" # IMPORTANT: Replace YourUserName
-    automation_profile_name = "AutomationProfile" # You can name this profile anything
-
-    browser = Browser(
-        config=BrowserConfig(
-            browser_binary_path=chrome_executable_path,
-            chrome_remote_debugging_port=9223,  # Or any other available port
-            extra_browser_args=[
-                f"--user-data-dir={automation_user_data_dir}",
-                f"--profile-directory={automation_profile_name}"
-            ]
-        )
-    )
-
-    # ... rest of your agent and script logic ...
-    ```
-
-    *   **`browser_binary_path`**: Path to your `chrome.exe`.
-    *   **`chrome_remote_debugging_port`**: The port for debugging (e.g., 9223).
-    *   **`automation_user_data_dir`**: Choose a path for a *new* folder where Chrome will store data for this automation. **Replace `YourUserName` with your actual Windows username.** It's best if this directory does not overlap with your standard Chrome user data directory.
-    *   **`automation_profile_name`**: A name for the profile within the `automation_user_data_dir` (e.g., "AutomationProfile", "MyScraperProfile").
-
-3.  **Run Your Script:** `browser-use` will now launch Chrome using these settings, creating a fresh profile in the specified location, which should reliably enable the remote debugging interface.
-
-**Manual Test (If `browser-use` still fails to connect):**
-
-If direct configuration in `browser-use` still leads to issues (which is less likely with the above setup), you can manually test if Chrome can launch with debugging on a new profile:
-
-*   Close all Chrome instances (Task Manager).
-*   Open PowerShell or CMD and run (adjust paths and port as needed):
-    ```powershell
-    & "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\Users\YourUserName\ChromeTestEnvironment" --profile-directory="MyTestProfile"
-    ```
-*   Then, try to access `http://localhost:9223/json` in a different browser. If you see JSON data, Chrome launched correctly with debugging. If not, the issue is with how Chrome itself is launching, possibly due to deeper system conflicts or Chrome installation issues.
-
-**Old Commands (For historical reference or manual launching with existing profiles - use with caution due to potential issues):**
-
+Open PowerShell and run:
 ```powershell
-# Example: Launching with the main User Data and specifying a profile (can be problematic if the profile is in a bad state)
-# & "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\Users\juans\AppData\Local\Google\Chrome\User Data" --profile-directory="Profile 9"
-
-# Example: Launching with a specific profile directory directly (can also be problematic)
-# & "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\Users\juans\AppData\Local\Google\Chrome\User Data\Profile 4"
+irm https://astral.sh/uv/install.ps1 | iex
 ```
 
+---
 
+### 2. Create a Virtual Environment
+
+```powershell
+uv venv
+```
+
+---
+
+### 3. Activate the Virtual Environment
+
+```powershell
+.venv\Scripts\activate
+```
+
+---
+
+### 4. Install Dependencies
+
+```powershell
+uv pip install requirements.txt
+```
+
+---
+
+### 5. Install Playwright Browsers
+
+```powershell
+playwright install
+```
+
+---
+
+### 6. Create a `.env` File
+
+Add the following variables to your `.env` file:
+
+```env
+GOOGLE_API_KEY=
+SUPABASE_URL=
+SUPABASE_KEY=
+CHROME_PATH=
+CHROME_USER_DATA_DIR=
+CHROME_PROFILE_DIRECTORY=
+```
+
+- **GOOGLE_API_KEY**: Get from [Google AI Studio](https://aistudio.google.com/).
+- **SUPABASE_URL** and **SUPABASE_KEY**: Get from your Supabase project settings.
+
+---
+
+### 7. Configure Chrome
+
+1. Open Chrome and go to: `chrome://version/`
+2. Set `CHROME_PATH` in your `.env` to the **Executable Path** shown.
+3. In `C:\Users\yourUser\`, create a folder for your Chrome environment (e.g., `C:\Users\anakin\ChromeTestEnvironment`).
+4. Set `CHROME_USER_DATA_DIR` to this folder path.
+5. Inside that folder, create another folder for your Chrome profile (e.g., `MyTestProfile`).
+6. Set `CHROME_PROFILE_DIRECTORY` to this profile folder name.
+
+---
+
+### 8. Start Chrome with Remote Debugging
+
+Replace paths and names as needed, then run in PowerShell:
+
+```powershell
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\Users\YourUserName\ChromeTestEnvironment" --profile-directory="MyTestProfile"
+```
+
+- Log in to your Chrome profile or create a new one.
+
+---
+
+### 9. Run the Project
+
+Send a POST request to `/api/v1/scrape_profile` with the following JSON body:
+
+```json
+{
+  "id": "some id (uuid)",
+  "linkedin_url": "https://www.linkedin.com/in/obi-wan-kenobi/"
+}
+```
+
+---
+
+### 10. Expected Response
+
+You should receive a response like:
+
+```json
 {
   "name": "Jane Doe",
   "title": "Senior Data Scientist at OpenAI",
@@ -172,3 +186,14 @@ If direct configuration in `browser-use` still leads to issues (which is less li
     }
   ]
 }
+```
+
+---
+
+## Notes
+
+- Make sure all environment variables are set correctly.
+- For any issues, check your Chrome paths and profile settings.
+
+---
+

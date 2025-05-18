@@ -1,16 +1,19 @@
 from fastapi import FastAPI, HTTPException
 import uvicorn
+from agent import run_agent
 from stores.prospect_store import prospect_store
-from utils import get_prospect_to_scrape, run_agent
 from utils import kill_chrome
-from models import ScrapeRequest
+from models import Prospect
 app = FastAPI()
 
 
 @app.post("/api/v1/scrape_profile")
-async def scrape_profile_endpoint(request: ScrapeRequest):
+async def scrape_profile_endpoint(request: Prospect):
     try:
-        prospect_store.prospect = get_prospect_to_scrape(request.id)
+        prospect_store.prospect = {
+            "id": request.id,
+            "linkedin_url": request.linkedin_url
+        }
         kill_chrome()
         await run_agent()
         return {"status": "success", "message": "Profile scraped and stored successfully."}

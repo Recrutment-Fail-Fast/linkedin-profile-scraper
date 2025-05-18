@@ -1,42 +1,11 @@
 from services import supabase
 from postgrest import APIResponse
 from models import Profile
-from utils.models import NoProspectsAvailableError, ProspectData, ProspectError, StorageError
 from stores.prospect_store import prospect_store
 
-
-def get_prospect_to_scrape(id: str) -> ProspectData:
-    """
-    Retrieves the next prospect to be scraped from the database.
-
-    Args:
-        id: The id of the prospect to be scraped
-    
-    Returns:
-        ProspectData: Dictionary containing prospect id and linkedin_url
-        
-    Raises:
-        NoProspectsAvailableError: If no prospects are available for scraping
-    """
-    try:
-        response: APIResponse = (
-            supabase.table("prospect")
-            .select("id,linkedin_url")
-            .eq("id", id)
-            .is_("scraped_profile", None)
-            .execute()
-        )
-        
-        if not response.data:
-            raise NoProspectsAvailableError("No profiles available for scraping")
-            
-        return {
-            "id": response.data[0]["id"],
-            "linkedin_url": response.data[0]["linkedin_url"]
-        }
-    except Exception as e:
-        raise ProspectError(f"Error fetching prospect: {str(e)}")
-
+class StorageError(Exception):
+    """Raised when there's an error storing data in the database"""
+    pass
 
 def store_scraped_profile(result) -> None:
     """
@@ -73,8 +42,6 @@ def store_scraped_profile(result) -> None:
         if not result.data:
             raise StorageError(f"Failed to store scraped profile for prospect {prospect_id}")
             
-    except NoProspectsAvailableError:
-        raise
     except Exception as e:
         raise StorageError(f"Error storing scraped profile: {str(e)}")
    
