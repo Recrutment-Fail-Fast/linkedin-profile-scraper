@@ -1,15 +1,15 @@
 from pydantic import BaseModel
 from typing import List
 
-class Skill(BaseModel):
-    skill: str
+
+
 class JobPosition(BaseModel):
     title: str
     location: str
     description: str
     start_date: str
     end_date: str
-    skills: List[Skill]
+    skills: List[str]
 
 class Experience(BaseModel):
     job_positions: List[JobPosition]
@@ -37,7 +37,7 @@ class Profile(BaseModel):
     title: str
     location: str
     about: str
-    skills: List[Skill]
+    skills: List[str]
     experience: List[Experience]
     education: List[Education]
     top_voices: List[TopVoice]
