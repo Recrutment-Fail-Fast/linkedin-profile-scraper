@@ -1,1 +1,2 @@
-from .get_profiles_to_scrape import get_profiles_to_scrape
+from .prospects import get_prospect_to_scrape, store_scraped_profile
+

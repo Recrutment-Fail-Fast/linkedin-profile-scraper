@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "killChrome",
+            "type": "shell",
+            "command": "Stop-Process -Name chrome -Force",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "focus": false,
+                "echo": false
+            }
+        }
+    ]
+}
