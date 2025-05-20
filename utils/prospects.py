@@ -34,7 +34,7 @@ def store_scraped_profile(result) -> None:
         # Update the prospect with the scraped profile
         result: APIResponse = (
             supabase.table("prospect")
-            .update({"scraped_profile": profile_dict})
+            .update({"profile_json": profile_dict})
             .eq("id", prospect_id)
             .execute()
         )
