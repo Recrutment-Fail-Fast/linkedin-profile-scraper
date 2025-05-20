@@ -69,10 +69,14 @@ CHROME_PROFILE_DIRECTORY=
 
 1. Open Chrome and go to: `chrome://version/`
 2. Set `CHROME_PATH` in your `.env` to the **Executable Path** shown.
-3. In `C:\Users\yourUser\`, create a folder for your Chrome environment (e.g., `C:\Users\anakin\ChromeTestEnvironment`).
+3. In `C:\\Users\\yourUser\\`, create a folder for your Chrome environment (e.g., `C:\\Users\\yourUser\\ChromeTestEnvironment`). REMEMBER TO USE DOUBLE \
 4. Set `CHROME_USER_DATA_DIR` to this folder path.
 5. Inside that folder, create another folder for your Chrome profile (e.g., `MyTestProfile`).
 6. Set `CHROME_PROFILE_DIRECTORY` to this profile folder name.
+
+CHROME_PATH=C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
+CHROME_USER_DATA_DIR=C:\\Users\\juans\\ChromeTestEnvironment
+CHROME_PROFILE_DIRECTORY=MyTestProfil
 
 ---
 
@@ -81,7 +85,7 @@ CHROME_PROFILE_DIRECTORY=
 Replace paths and names as needed, then run in PowerShell:
 
 ```powershell
-& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\Users\YourUserName\ChromeTestEnvironment" --profile-directory="MyTestProfile"
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\Users\juans\ChromeTestEnvironment" --profile-directory="MyTestProfile"
 ```
 
 - Log in to your Chrome profile or create a new one.
