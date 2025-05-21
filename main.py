@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 import uvicorn
-from agent import run_agent
+from agents.linkedin_to_profile_json import run_agent
 from stores.prospect_store import prospect_store
 from utils import kill_chrome
 from models import Prospect

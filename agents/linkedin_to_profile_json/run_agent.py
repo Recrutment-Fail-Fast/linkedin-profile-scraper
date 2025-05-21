@@ -1,7 +1,7 @@
-from agent.initial_actions import get_initial_actions
-from agent.prompts import task, override_system_message, extend_planner_system_message
+from .initial_actions import get_initial_actions
+from .prompts import task, override_system_message, extend_planner_system_message
 from models import Profile
-from agent.browser import browser
+from .browser import browser
 from langchain_google_genai import ChatGoogleGenerativeAI
 from browser_use import Agent, Controller
 from utils.prospects import store_scraped_profile

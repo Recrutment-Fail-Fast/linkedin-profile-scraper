@@ -1,3 +1,4 @@
+from agents.profile_json_to_profile_text.agent import profile_json_to_profile_text
 from services import supabase
 from postgrest import APIResponse
 from models import Profile
@@ -28,13 +29,13 @@ def store_scraped_profile(result) -> None:
         profile: Profile = Profile.model_validate_json(pre_parsed_data)
         profile_dict = profile.model_dump()
             
-        # Log the profile_dict before attempting to store it
-        print(f"Attempting to store profile_dict: {profile_dict}")
+        profile_text = profile_json_to_profile_text(profile_dict)
 
         # Update the prospect with the scraped profile
         result: APIResponse = (
             supabase.table("prospect")
-            .update({"profile_json": profile_dict})
+            .update({"profile_json": profile_dict,
+                     "profile_text": profile_text})
             .eq("id", prospect_id)
             .execute()
         )
