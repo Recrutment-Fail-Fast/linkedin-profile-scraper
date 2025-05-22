@@ -12,6 +12,7 @@ class JobPosition(BaseModel):
     skills: List[str]
 
 class Experience(BaseModel):
+    company: str
     job_positions: List[JobPosition]
     start_date: str
     end_date: str
@@ -30,7 +31,6 @@ class Language(BaseModel):
 class TopVoice(BaseModel):
     name: str
     title: str
-    followers: int
 
 class Profile(BaseModel):
     name: str

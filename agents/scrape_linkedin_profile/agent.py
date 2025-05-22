@@ -4,7 +4,7 @@ from models import Profile
 from .browser import browser
 from langchain_google_genai import ChatGoogleGenerativeAI
 from browser_use import Agent, Controller
-from utils.prospects import store_scraped_profile
+from utils.store_scraped_profile import store_scraped_profile
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,7 +13,7 @@ controller = Controller(output_model=Profile)
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash",temperature=0.0)
 
 
-async def run_agent():
+async def scrape_linkedin_profile_agent():
     agent = Agent(
             task=task,
             llm=llm,
@@ -25,4 +25,5 @@ async def run_agent():
     )
     result = await agent.run()
     await browser.close()
-    store_scraped_profile(result)
+    result = store_scraped_profile(result)
+    

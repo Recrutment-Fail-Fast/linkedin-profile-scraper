@@ -1,8 +1,9 @@
-from agents.profile_json_to_profile_text.agent import profile_json_to_profile_text
+
+from agents.analyse_prospect.agent import analyse_prospect_agent
 from services import supabase
 from postgrest import APIResponse
 from models import Profile
-from stores.prospect_store import prospect_store
+from stores.prospect import prospect_store
 
 class StorageError(Exception):
     """Raised when there's an error storing data in the database"""
@@ -29,7 +30,7 @@ def store_scraped_profile(result) -> None:
         profile: Profile = Profile.model_validate_json(pre_parsed_data)
         profile_dict = profile.model_dump()
             
-        profile_text = profile_json_to_profile_text(profile_dict)
+        profile_text = analyse_prospect_agent(profile_dict)
 
         # Update the prospect with the scraped profile
         result: APIResponse = (
@@ -39,10 +40,12 @@ def store_scraped_profile(result) -> None:
             .eq("id", prospect_id)
             .execute()
         )
-        
+
         if not result.data:
             raise StorageError(f"Failed to store scraped profile for prospect {prospect_id}")
-            
+        
+        return result.data[0]
+
     except Exception as e:
         raise StorageError(f"Error storing scraped profile: {str(e)}")
    

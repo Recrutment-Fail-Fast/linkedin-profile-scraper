@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
 class Prospect(BaseModel):
-    id: str
+    prospect_id: str
     linkedin_url: str
+    prospect_evaluation_id: str
