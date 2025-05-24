@@ -6,6 +6,7 @@ from agents.other_job_position_evaluation.agent import evaluate_prospect_for_oth
 from utils import get_job_evaluation_data, store_score_and_evaluation
 from langchain_core.output_parsers.openai_functions import JsonOutputFunctionsParser
 from .system_prompt import construct_evaluation_criteria_system_prompt
+from models import EvaluationResponse
 
 
 class EvaluationOutput(BaseModel):
@@ -66,9 +67,15 @@ async def evaluate_prospect_agent(prospect_evaluation_id: str):
             if other_position_id:
                 await evaluate_prospect_agent(prospect_evaluation_id=other_position_id)
             else:
-                return {"success": False, "message": "Prospect is not fit for the job and no other position found"}
+                return EvaluationResponse(
+                    success=False, 
+                    message="Prospect is not fit for the job and no other position found"
+                )
         else:
-            return {"success": True, "message": "Prospect is fit for the job"}
+            return EvaluationResponse(
+                success=True, 
+                message="Prospect is fit for the job"
+            )
 
 
 
