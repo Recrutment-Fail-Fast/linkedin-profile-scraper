@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   linkedin-scraper:
     build: .
     ports:
       - "8000:8000"
+      - "5678:5678"  # Debug port
     environment:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - SUPABASE_URL=${SUPABASE_URL}
@@ -12,15 +11,19 @@ services:
       - CHROME_USER_DATA_DIR=/tmp/chrome-profile
       - CHROME_PROFILE_DIRECTORY=Default
       - DOCKER=true
+      - DEBUG=true  # Enable debug mode
     volumes:
       - chrome-data:/tmp/chrome-profile
       - ./logs:/app/logs
+      - .:/app  # Mount source code for live editing
     restart: unless-stopped
     shm_size: '2gb'  # Increase shared memory for Chrome
     security_opt:
       - seccomp:unconfined  # Required for Chrome in container
     cap_add:
       - SYS_ADMIN  # Required for Chrome sandboxing
+    # Override default command for debugging
+    command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 volumes:
   chrome-data: 

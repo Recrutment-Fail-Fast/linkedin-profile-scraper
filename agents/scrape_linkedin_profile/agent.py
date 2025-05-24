@@ -1,7 +1,7 @@
 from .initial_actions import get_initial_actions
 from .prompts import task, override_system_message, extend_planner_system_message
 from models import Profile
-from .browser import browser
+from .browser import get_browser
 from langchain_google_genai import ChatGoogleGenerativeAI
 from browser_use import Agent, Controller
 from utils.store_scraped_profile import store_scraped_profile
@@ -10,20 +10,47 @@ from dotenv import load_dotenv
 load_dotenv()
 
 controller = Controller(output_model=Profile)
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash",temperature=0.0)
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.0)
 
 
 async def scrape_linkedin_profile_agent():
-    agent = Agent(
+    """Scrape LinkedIn profile using browser automation agent."""
+    browser_instance = None
+    try:
+        # Create browser instance
+        print("🌐 Creating browser instance...")
+        browser_instance = await get_browser()
+        
+        # Create and run agent
+        print("🤖 Creating browser agent...")
+        agent = Agent(
             task=task,
             llm=llm,
-            browser=browser,
-		controller=controller,
-		initial_actions=get_initial_actions(),
-		override_system_message=override_system_message,
-		extend_planner_system_message=extend_planner_system_message
-    )
-    result = await agent.run()
-    await browser.close()
-    result = store_scraped_profile(result)
+            browser=browser_instance,
+            controller=controller,
+            initial_actions=get_initial_actions(),
+            override_system_message=override_system_message,
+            extend_planner_system_message=extend_planner_system_message
+        )
+        
+        print("▶️ Running browser agent...")
+        result = await agent.run()
+        
+        # Store the scraped profile
+        print("💾 Storing scraped profile...")
+        result = store_scraped_profile(result)
+        
+        return result
+        
+    except Exception as e:
+        print(f"❌ Error in scrape_linkedin_profile_agent: {e}")
+        raise
+    finally:
+        # Always close browser if it was created
+        if browser_instance:
+            try:
+                print("🔒 Closing browser...")
+                await browser_instance.close()
+            except Exception as e:
+                print(f"Warning: Error closing browser: {e}")
     

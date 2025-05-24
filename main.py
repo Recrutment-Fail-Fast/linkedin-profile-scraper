@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 import uvicorn
+import asyncio
 from agents.evaluate_prospect.agent import evaluate_prospect_agent
 from agents.scrape_linkedin_profile.agent import scrape_linkedin_profile_agent
 from stores.prospect import prospect_store
@@ -14,6 +15,20 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup."""
+    print("🚀 Starting LinkedIn Profile Scraper & Prospect Evaluator API...")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown."""
+    print("🛑 Shutting down API...")
+    try:
+        kill_chrome()
+    except Exception as e:
+        print(f"Warning: Error during cleanup: {e}")
 
 @app.post(
     "/api/v1/evaluate_prospect",
@@ -90,19 +105,57 @@ async def evaluate_prospect_endpoint(
         HTTPException: If evaluation process fails
     """
     try:
+        # Store prospect data
         prospect_store.prospect = {
             "prospect_id": request.prospect_id,
             "linkedin_url": request.linkedin_url
         }
+        
+        # Clean up any existing Chrome processes
+        print("🧹 Cleaning up existing Chrome processes...")
         kill_chrome()
+        
+        # Add a small delay to ensure cleanup is complete
+        await asyncio.sleep(2)
+        
+        # Scrape LinkedIn profile
+        print("🔍 Starting LinkedIn profile scraping...")
         await scrape_linkedin_profile_agent()
+        
+        # Evaluate prospect
+        print("⚖️ Starting prospect evaluation...")
         result = await evaluate_prospect_agent(request.prospect_evaluation_id)
+        
+        print("✅ Evaluation completed successfully")
         return EvaluationResponse(**result)
+        
     except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Evaluation process failed: {error_msg}")
+        
+        # Try to cleanup on error
+        try:
+            kill_chrome()
+        except:
+            pass
+            
+        # Provide more specific error messages based on the error type
+        if "validation error for BrowserSession" in error_msg:
+            detail = "Browser initialization failed. This might be due to a browser configuration issue or Chrome not being available."
+        elif "browser" in error_msg.lower():
+            detail = "Browser-related error occurred. Please ensure Chrome is properly installed and accessible."
+        else:
+            detail = f"Evaluation process failed: {error_msg}"
+            
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail=f"Evaluation process failed: {str(e)}"
+            detail=detail
         )
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy", "service": "LinkedIn Profile Scraper"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -37,8 +37,23 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Install Playwright browsers
-RUN playwright install --with-deps
+# Set Playwright environment variables before installation
+ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
+
+# Install Playwright browsers with explicit path
+RUN playwright install --with-deps chromium
+
+# Verify Playwright installation and create compatibility symlink
+RUN find /root/.cache/ms-playwright -name "chrome" -type f 2>/dev/null | head -1 > /tmp/chrome_path.txt && \
+    if [ -s /tmp/chrome_path.txt ]; then \
+    echo "✅ Chrome found at: $(cat /tmp/chrome_path.txt)"; \
+    mkdir -p /ms-playwright && \
+    ln -sf /root/.cache/ms-playwright/* /ms-playwright/ 2>/dev/null || true; \
+    else \
+    echo "❌ Chrome not found in expected location"; \
+    find / -name "chrome" -type f 2>/dev/null | grep -E "(playwright|chromium)" | head -5; \
+    fi
 
 # Copy application code
 COPY . .
