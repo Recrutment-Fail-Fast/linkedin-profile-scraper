@@ -1,9 +1,15 @@
 import subprocess
+import os
 
 def kill_chrome():
     try:
-        subprocess.run(["powershell", "-Command", "Stop-Process -Name chrome -Force"], check=True)
+        # Kill Chrome processes using pkill
+        subprocess.run(["pkill", "-f", "chrome"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error stopping Chrome: {e}")
     except FileNotFoundError:
-        print("PowerShell command not found. Please ensure it is in your PATH.")
+        # Try killall as backup
+        try:
+            subprocess.run(["killall", "chrome"], check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("Could not kill Chrome processes. They may not be running.")

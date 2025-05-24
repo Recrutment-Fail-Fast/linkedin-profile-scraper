@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  linkedin-scraper:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - CHROME_USER_DATA_DIR=/tmp/chrome-profile
+      - CHROME_PROFILE_DIRECTORY=Default
+      - DOCKER=true
+    volumes:
+      - chrome-data:/tmp/chrome-profile
+      - ./logs:/app/logs
+    restart: unless-stopped
+    shm_size: '2gb'  # Increase shared memory for Chrome
+    security_opt:
+      - seccomp:unconfined  # Required for Chrome in container
+    cap_add:
+      - SYS_ADMIN  # Required for Chrome sandboxing
+
+volumes:
+  chrome-data: 

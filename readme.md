@@ -202,3 +202,9 @@ You should receive a response like:
 
 ---
 
+docker-compose build
+
+
+python scripts/transfer_profile.py
+
+docker-compose up
