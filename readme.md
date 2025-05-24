@@ -94,12 +94,13 @@ Replace paths and names as needed, then run in PowerShell:
 
 ### 9. Run the Project
 
-Send a POST request to `/api/v1/scrape_profile` with the following JSON body:
+Send a POST request to `/api/v1/evaluate_prospect` with the following JSON body:
 
 ```json
 {
-  "id": "some id (uuid)",
-  "linkedin_url": "https://www.linkedin.com/in/obi-wan-kenobi/"
+  "prospect_id": "some id (uuid)",
+  "linkedin_url": "https://www.linkedin.com/in/obi-wan-kenobi/",
+  "prospect_evaluation_id": "some id (uuid)"
 }
 ```
 

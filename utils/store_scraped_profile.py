@@ -22,7 +22,7 @@ def store_scraped_profile(result) -> None:
     """
     try:
         # Extract data from result
-        prospect_id = prospect_store.prospect["id"]
+        prospect_id = prospect_store.prospect["prospect_id"]
         pre_parsed_data = result.final_result()
 
         

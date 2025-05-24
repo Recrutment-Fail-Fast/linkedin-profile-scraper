@@ -1,6 +1,6 @@
 from services import supabase
 
-async def get_evaluation_criteria_and_prospect_profile(
+def get_job_evaluation_data(
     prospect_evaluation_id: str,
 ) -> dict:
     """
@@ -16,7 +16,7 @@ async def get_evaluation_criteria_and_prospect_profile(
 
     try:
         response = supabase.rpc(
-            "get_evaluation_criteria_and_prospect_profile",
+            "get_job_evaluation_data",
             {"prospect_evaluation_id": prospect_evaluation_id},
         ).execute()
 
@@ -24,8 +24,9 @@ async def get_evaluation_criteria_and_prospect_profile(
 
         profile = result_data.get("profile_text")
         evaluation_criteria = result_data.get("evaluation_criteria")
+        llm_score_threshold = result_data.get("llm_score_threshold")
 
-        if not profile or not evaluation_criteria:
+        if not profile or not evaluation_criteria or not llm_score_threshold:
             raise Exception(
                 f"Error fetching details for prospect evaluation {prospect_evaluation_id}: Missing prospect or job position data after join."
             )
