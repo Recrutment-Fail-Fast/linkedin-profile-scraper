@@ -13,12 +13,8 @@ def create_browser():
         chrome_profile_directory: str = os.environ.get("CHROME_PROFILE_DIRECTORY", "Default")
         debug_port = 9223
 
-        # Check if running in Docker
-        is_docker = os.environ.get("DOCKER", "false").lower() == "true"
-
-        if is_docker:
             # Docker-friendly browser args
-            extra_args = [
+        extra_args = [
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
@@ -43,30 +39,10 @@ def create_browser():
             ]
             
             # For Docker, don't specify chrome_path, let browser-use find it
-            browser_config = BrowserConfig(
+        browser_config = BrowserConfig(
                 chrome_remote_debugging_port=debug_port,
                 extra_browser_args=extra_args,
                 headless=True
-            )
-        else:
-            # Local development args
-            extra_args = [
-                f"--user-data-dir={chrome_user_data_dir}",
-                f"--profile-directory={chrome_profile_directory}",
-                "--disable-blink-features=AutomationControlled",
-                "--no-default-browser-check",
-                "--no-first-run",
-                "--disable-default-apps",
-                "--disable-extensions-except",
-                "--disable-plugins-discovery",
-                "--allow-running-insecure-content"
-            ]
-
-            browser_config = BrowserConfig(
-                browser_binary_path=chrome_path,
-                chrome_remote_debugging_port=debug_port,
-                extra_browser_args=extra_args,
-                headless=False
             )
 
         # Initialize browser with proper configuration
@@ -79,15 +55,3 @@ def create_browser():
         import traceback
         traceback.print_exc()
         raise
-
-async def get_browser():
-    """Async function to get browser instance."""
-    try:
-        browser_instance = create_browser()
-        return browser_instance
-    except Exception as e:
-        print(f"❌ Error getting browser: {e}")
-        raise
-
-# Create browser instance
-browser = None  # Initialize as None, will be created when needed
