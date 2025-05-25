@@ -115,9 +115,6 @@ async def evaluate_prospect_endpoint(
         print("🧹 Cleaning up existing Chrome processes...")
         kill_chrome()
         
-        # Add a small delay to ensure cleanup is complete
-        await asyncio.sleep(2)
-        
         # Scrape LinkedIn profile
         print("🔍 Starting LinkedIn profile scraping...")
         await scrape_linkedin_profile_agent()

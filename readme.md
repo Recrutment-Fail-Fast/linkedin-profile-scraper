@@ -208,3 +208,7 @@ docker-compose build
 python scripts/transfer_profile.py
 
 docker-compose up
+
+
+# find / -type f -name "chrome" 2>/dev/null
+/root/.cache/ms-playwright/chromium-1169/chrome-linux/chrome
