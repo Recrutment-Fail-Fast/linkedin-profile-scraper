@@ -6,6 +6,10 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Build arguments for Chrome profile
+ARG CHROME_USER_DATA_DIR
+ARG CHROME_PROFILE_DIRECTORY=Default
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     wget \
@@ -28,6 +32,8 @@ RUN apt-get update && apt-get install -y \
     libxi6 \
     libxtst6 \
     ca-certificates \
+    procps \
+    psmisc \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -61,6 +67,18 @@ COPY . .
 # Create necessary directories and set proper permissions
 RUN mkdir -p /tmp/chrome-profile && \
     chmod 755 /tmp/chrome-profile
+
+# Copy Chrome profile if provided during build
+COPY scripts/copy_chrome_profile_docker.sh /tmp/copy_chrome_profile_docker.sh
+RUN chmod +x /tmp/copy_chrome_profile_docker.sh
+
+# Copy Chrome profile during build if arguments are provided
+RUN if [ -n "$CHROME_USER_DATA_DIR" ] && [ -n "$CHROME_PROFILE_DIRECTORY" ]; then \
+    echo "🔧 Copying Chrome profile during Docker build..."; \
+    /tmp/copy_chrome_profile_docker.sh "$CHROME_USER_DATA_DIR" "$CHROME_PROFILE_DIRECTORY"; \
+    else \
+    echo "ℹ️ No Chrome profile specified for build. Will use volume mount."; \
+    fi
 
 # Expose port
 EXPOSE 8000
