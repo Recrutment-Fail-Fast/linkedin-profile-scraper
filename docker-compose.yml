@@ -11,7 +11,6 @@ services:
       # CHROME_USER_DATA_DIR is now primarily controlled by Dockerfile's ENV CHROME_PROFILE_PATH_IN_IMAGE
       # and browser.py directly uses /usr/src/app/chrome_profile.
       # We can remove the CHROME_USER_DATA_DIR=/tmp/chrome-profile from here to avoid confusion.
-      - CHROME_PROFILE_DIRECTORY=Default # This can remain if your app uses it, though BrowserProfile in browser.py also sets it.
       - DOCKER=true
       - DEBUG=true # Enable debug mode
     volumes:
