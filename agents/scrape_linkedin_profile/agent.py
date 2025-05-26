@@ -28,6 +28,7 @@ async def scrape_linkedin_profile_agent():
             llm=llm,
             browser_session=browser_session,
             controller=controller,
+            enable_memory=False,
             initial_actions=get_initial_actions(),
             override_system_message=override_system_message,
             extend_planner_system_message=extend_planner_system_message

@@ -1,53 +1,64 @@
 #!/bin/bash
-# Script to copy Chrome profile during Docker build
-# Usage: copy_chrome_profile_docker.sh <chrome_user_data_dir> <profile_directory>
+# Script to copy and verify Chrome profile data within a Docker image.
+# Usage: copy_chrome_profile_docker.sh <source_profile_data_path_in_image> <target_profile_path_in_image>
 
 set -e
 
-CHROME_USER_DATA_DIR="$1"
-PROFILE_DIRECTORY="$2"
+SOURCE_PROFILE_DATA_PATH="$1"
+TARGET_PROFILE_PATH="$2"
 
-if [ -z "$CHROME_USER_DATA_DIR" ] || [ -z "$PROFILE_DIRECTORY" ]; then
-    echo "❌ Usage: $0 <chrome_user_data_dir> <profile_directory>"
+if [ -z "$SOURCE_PROFILE_DATA_PATH" ] || [ -z "$TARGET_PROFILE_PATH" ]; then
+    echo "❌ Usage: $0 <source_profile_data_path_in_image> <target_profile_path_in_image>"
     exit 1
 fi
 
-echo "🔧 Copying Chrome profile during Docker build..."
-echo "📁 Source: $CHROME_USER_DATA_DIR/$PROFILE_DIRECTORY"
-echo "📁 Target: /tmp/chrome-profile/"
+echo "🔧 Processing Chrome profile data within Docker image..."
+echo "📁 Source (already in image): $SOURCE_PROFILE_DATA_PATH"
+echo "🎯 Target (final location in image): $TARGET_PROFILE_PATH"
 
-# Check if source profile exists
-if [ ! -d "$CHROME_USER_DATA_DIR/$PROFILE_DIRECTORY" ]; then
-    echo "❌ Chrome profile not found: $CHROME_USER_DATA_DIR/$PROFILE_DIRECTORY"
-    echo "Available profiles:"
-    ls -la "$CHROME_USER_DATA_DIR" 2>/dev/null | grep "^d" | grep -E "(Default|Profile)" || echo "No profiles found"
+# Check if source data exists (it should have been copied by Dockerfile COPY)
+if [ ! -d "$SOURCE_PROFILE_DATA_PATH" ]; then
+    echo "❌ Source profile data not found at internal path: $SOURCE_PROFILE_DATA_PATH"
+    echo "This is unexpected. Ensure Dockerfile correctly copied data before running this script."
+    # List contents of /tmp to help debug
+    ls -la /tmp
     exit 1
 fi
 
-# Copy the profile
-echo "📋 Copying profile files..."
-cp -r "$CHROME_USER_DATA_DIR/$PROFILE_DIRECTORY"/* /tmp/chrome-profile/ 2>/dev/null || {
-    echo "⚠️ Some files couldn't be copied (this is normal for locked files)"
+# Ensure target directory exists (though Dockerfile should create it)
+if [ ! -d "$TARGET_PROFILE_PATH" ]; then
+    echo "ℹ️ Target directory $TARGET_PROFILE_PATH does not exist. Creating it."
+    mkdir -p "$TARGET_PROFILE_PATH"
+fi
+
+# Copy the profile data from the source (e.g., /tmp/staging_area) to the final target path
+# The `.` after SOURCE_PROFILE_DATA_PATH ensures contents are copied, not the directory itself
+echo "📋 Copying profile files from $SOURCE_PROFILE_DATA_PATH to $TARGET_PROFILE_PATH..."
+cp -r "$SOURCE_PROFILE_DATA_PATH"/. "$TARGET_PROFILE_PATH/" 2>/dev/null || {
+    echo "⚠️ Some files couldn't be copied from $SOURCE_PROFILE_DATA_PATH to $TARGET_PROFILE_PATH. This might be okay for some files (e.g. lockfiles if they were somehow included), but check if essential files are present."
 }
 
-# Check for important authentication files
-echo "🔍 Checking for authentication files:"
-AUTH_FILES=("Cookies" "Local Storage" "Session Storage" "Preferences" "Login Data" "Web Data")
+# Check for important authentication files in the final target location
+echo "🔍 Checking for authentication files in $TARGET_PROFILE_PATH:"
+AUTH_FILES=("Cookies" "Local Storage" "Preferences" "Login Data" "Web Data") # Removed "Session Storage" as it's often problematic and less critical for persistence
 
 for file in "${AUTH_FILES[@]}"; do
-    if [ -e "/tmp/chrome-profile/$file" ]; then
-        if [ -f "/tmp/chrome-profile/$file" ]; then
-            size=$(stat -c%s "/tmp/chrome-profile/$file" 2>/dev/null || echo "unknown")
-            echo "  ✅ $file: $size bytes"
+    full_file_path="$TARGET_PROFILE_PATH/$file"
+    if [ -e "$full_file_path" ]; then
+        if [ -f "$full_file_path" ]; then
+            size=$(stat -c%s "$full_file_path" 2>/dev/null || echo "unknown_size")
+            echo "  ✅ $file: Found (File, Size: $size bytes)"
+        elif [ -d "$full_file_path" ]; then
+            count=$(find "$full_file_path" -type f 2>/dev/null | wc -l)
+            echo "  ✅ $file: Found (Directory, $count files)"
         else
-            count=$(find "/tmp/chrome-profile/$file" -type f 2>/dev/null | wc -l)
-            echo "  ✅ $file: $count files"
+            echo "  ✅ $file: Found (Type unknown)"
         fi
     else
-        echo "  ❌ $file: Not found"
+        echo "  ⚠️  $file: Not found in $TARGET_PROFILE_PATH. This might impact authentication."
     fi
 done
 
-# Set proper permissions
-chmod -R 755 /tmp/chrome-profile/
-echo "✅ Chrome profile copied successfully!" 
+# Set proper permissions for the final profile directory
+chmod -R 777 "$TARGET_PROFILE_PATH/" # Changed to 777 for broader compatibility inside container
+echo "✅ Chrome profile processed and placed at $TARGET_PROFILE_PATH." 

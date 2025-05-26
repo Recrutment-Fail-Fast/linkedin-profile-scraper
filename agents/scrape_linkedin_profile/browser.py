@@ -7,7 +7,7 @@ async def create_browser():
         
         # Use your existing Chrome profile directory
         # This should point to your actual Chrome profile with saved logins
-        chrome_user_data_dir = "/tmp/chrome-profile"  # This will be mounted from host
+        chrome_user_data_dir = "/usr/src/app/chrome_profile"  # Use the path from Dockerfile's CHROME_PROFILE_PATH_IN_IMAGE
         chrome_profile_directory = "Default"  # or "Profile 1", "Profile 2", etc.
         debug_port = 9223
 

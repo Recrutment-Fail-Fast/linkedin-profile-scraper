@@ -7,8 +7,10 @@ ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Build arguments for Chrome profile
-ARG CHROME_USER_DATA_DIR
-ARG CHROME_PROFILE_DIRECTORY=Default
+ARG CHROME_PROFILE_BUILD_CONTEXT_DIR
+
+# Path inside the image where the final profile will be stored
+ENV CHROME_PROFILE_PATH_IN_IMAGE=/usr/src/app/chrome_profile
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -44,11 +46,11 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Set Playwright environment variables before installation
-ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
 
 # Install Playwright browsers with explicit path
-RUN playwright install --with-deps chromium
+RUN playwright install chromium
 
 # Verify Playwright installation and create compatibility symlink
 RUN find /root/.cache/ms-playwright -name "chrome" -type f 2>/dev/null | head -1 > /tmp/chrome_path.txt && \
@@ -73,11 +75,13 @@ COPY scripts/copy_chrome_profile_docker.sh /tmp/copy_chrome_profile_docker.sh
 RUN chmod +x /tmp/copy_chrome_profile_docker.sh
 
 # Copy Chrome profile during build if arguments are provided
-RUN if [ -n "$CHROME_USER_DATA_DIR" ] && [ -n "$CHROME_PROFILE_DIRECTORY" ]; then \
-    echo "🔧 Copying Chrome profile during Docker build..."; \
-    /tmp/copy_chrome_profile_docker.sh "$CHROME_USER_DATA_DIR" "$CHROME_PROFILE_DIRECTORY"; \
+RUN if [ -n "$CHROME_PROFILE_BUILD_CONTEXT_DIR" ]; then \
+    echo "🔧 Preparing Chrome profile from build context: $CHROME_PROFILE_BUILD_CONTEXT_DIR"; \
+    cp -r "$CHROME_PROFILE_BUILD_CONTEXT_DIR"/. "/tmp/staging_chrome_profile_from_context/"; \
+    /tmp/copy_chrome_profile_docker.sh "/tmp/staging_chrome_profile_from_context" "${CHROME_PROFILE_PATH_IN_IMAGE}"; \
+    rm -rf "/tmp/staging_chrome_profile_from_context"; \
     else \
-    echo "ℹ️ No Chrome profile specified for build. Will use volume mount."; \
+    echo "ℹ️ No CHROME_PROFILE_BUILD_CONTEXT_DIR specified. Profile should be volume-mounted to ${CHROME_PROFILE_PATH_IN_IMAGE} at runtime."; \
     fi
 
 # Expose port

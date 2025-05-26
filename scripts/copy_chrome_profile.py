@@ -65,6 +65,16 @@ def validate_chrome_profile(user_data_dir, profile_directory):
     
     return profile_path
 
+import subprocess
+
+def kill_chrome():
+    try:
+        subprocess.run(["powershell", "-Command", "Stop-Process -Name chrome -Force"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error stopping Chrome: {e}")
+    except FileNotFoundError:
+        print("PowerShell command not found. Please ensure it is in your PATH.")
+
 def copy_profile_to_docker(source_profile_path, profile_name):
     """Copy Chrome profile to Docker volume."""
     print(f"📋 Copying Chrome profile '{profile_name}' to Docker volume...")
@@ -188,9 +198,7 @@ def main():
         print(f"✅ Chrome profile found: {source_profile_path}")
         
         # Check if Chrome is running
-        print(f"\n⚠️  IMPORTANT: Please close all Chrome windows before proceeding!")
-        print(f"This prevents profile lock conflicts during copying.")
-        
+        kill_chrome()
         # Check for running Chrome processes
         try:
             import psutil

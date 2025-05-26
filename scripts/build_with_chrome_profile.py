@@ -9,9 +9,22 @@ import subprocess
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
+import shutil
 
-# Load environment variables from .env file
 load_dotenv()
+
+# CHROME_PATH=C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe
+# CHROME_USER_DATA_DIR=C:\\Users\\juans\\ChromeTestEnvironment
+# CHROME_PROFILE_DIRECTORY=MyTestProfile
+import subprocess
+
+def kill_chrome():
+    try:
+        subprocess.run(["powershell", "-Command", "Stop-Process -Name chrome -Force"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error stopping Chrome: {e}")
+    except FileNotFoundError:
+        print("PowerShell command not found. Please ensure it is in your PATH.")
 
 def get_chrome_config():
     """Get Chrome configuration from environment variables."""
@@ -46,34 +59,75 @@ def validate_chrome_profile(user_data_dir, profile_directory):
 def build_docker_image(chrome_user_data_dir, chrome_profile_directory, image_tag="linkedin-scraper:latest"):
     """Build Docker image with Chrome profile included."""
     print("🐳 Building Docker image with Chrome profile...")
-    print(f"📁 Chrome User Data Dir: {chrome_user_data_dir}")
-    print(f"📂 Profile Directory: {chrome_profile_directory}")
+    print(f"Source Host Chrome User Data Dir: {chrome_user_data_dir}")
+    print(f"Source Host Profile Directory: {chrome_profile_directory}")
     print(f"🏷️ Image Tag: {image_tag}")
     
-    # Convert Windows paths to Unix-style for Docker build context
-    if os.name == 'nt':  # Windows
-        # Convert C:\Users\... to /c/Users/... for Docker
-        unix_path = chrome_user_data_dir.replace('\\', '/').replace('C:', '/c')
-        chrome_user_data_dir = unix_path
+    kill_chrome()
     
-    # Build command
-    cmd = [
-        "docker", "build",
-        "--build-arg", f"CHROME_USER_DATA_DIR={chrome_user_data_dir}",
-        "--build-arg", f"CHROME_PROFILE_DIRECTORY={chrome_profile_directory}",
-        "-t", image_tag,
-        "."
-    ]
+    # Define a temporary directory in the build context for the profile files
+    # This path is relative to the Dockerfile (current working directory)
+    temp_context_profile_dir_name = "temp_docker_profile_files_for_build"
+    temp_context_profile_path = Path.cwd() / temp_context_profile_dir_name
     
-    print(f"🔨 Running: {' '.join(cmd)}")
-    
+    # Path to the source profile on the host machine
+    source_profile_full_path = Path(chrome_user_data_dir) / chrome_profile_directory
+
+    cmd = []
+
     try:
+        # Clean up any existing temporary profile directory
+        if temp_context_profile_path.exists():
+            shutil.rmtree(temp_context_profile_path)
+        
+        # Create the temporary directory for the profile files
+        temp_context_profile_path.mkdir(parents=True, exist_ok=True)
+
+        # Copy the *contents* of the source profile directory to the temporary context directory
+        print(f"📋 Copying profile contents from '{source_profile_full_path}' to '{temp_context_profile_path}' for Docker context...")
+        for item in source_profile_full_path.iterdir():
+            source_item = source_profile_full_path / item.name
+            dest_item = temp_context_profile_path / item.name
+            if source_item.is_dir():
+                shutil.copytree(source_item, dest_item, dirs_exist_ok=True)
+            else:
+                shutil.copy2(source_item, dest_item)
+        print(f"✅ Profile contents copied to '{temp_context_profile_path}'.")
+
+        # Build command using the new build arg for the profile source in context
+        cmd = [
+            "docker", "build",
+            "--no-cache",
+            "--build-arg", f"CHROME_PROFILE_BUILD_CONTEXT_DIR={temp_context_profile_dir_name}",
+            "-t", image_tag,
+            "."
+        ]
+    
+        print(f"🔨 Running: {' '.join(cmd)}")
+    
+        # Execute the Docker build command
         result = subprocess.run(cmd, check=True, capture_output=False)
         print(f"✅ Docker image built successfully: {image_tag}")
         return True
     except subprocess.CalledProcessError as e:
         print(f"❌ Docker build failed with exit code {e.returncode}")
+        if e.stdout:
+            print("Stdout:\n", e.stdout.decode())
+        if e.stderr:
+            print("Stderr:\n", e.stderr.decode())
         return False
+    except FileNotFoundError:
+        print("❌ Docker command not found. Please ensure Docker is installed and in your PATH.")
+        return False
+    except Exception as e:
+        print(f"❌ An unexpected error occurred during Docker build: {e}")
+        return False
+    finally:
+        # Clean up the temporary profile directory
+        if temp_context_profile_path.exists():
+            print(f"🧹 Cleaning up temporary profile directory: {temp_context_profile_path}")
+            shutil.rmtree(temp_context_profile_path)
+            print("✅ Cleanup complete.")
 
 def main():
     """Main function to build Docker image with Chrome profile."""
