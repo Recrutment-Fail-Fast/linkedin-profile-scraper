@@ -8,13 +8,12 @@ services:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      # CHROME_USER_DATA_DIR is now primarily controlled by Dockerfile's ENV CHROME_PROFILE_PATH_IN_IMAGE
-      # and browser.py directly uses /usr/src/app/chrome_profile.
-      # We can remove the CHROME_USER_DATA_DIR=/tmp/chrome-profile from here to avoid confusion.
+      - CHROME_USER_DATA_DIR=/tmp/chrome-profile
+      - CHROME_PROFILE_DIRECTORY=Default
       - DOCKER=true
       - DEBUG=true # Enable debug mode
     volumes:
-      - .:/app # Mount source code for live editing (good for development)
+      - .:/app # Mount source code for live editing
     restart: unless-stopped
     shm_size: '2gb' # Increase shared memory for Chrome
     security_opt:

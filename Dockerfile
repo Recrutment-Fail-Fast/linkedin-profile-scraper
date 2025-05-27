@@ -40,9 +40,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Set Playwright environment variables before installation
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
 
 # Install Playwright system dependencies and browsers
 RUN playwright install-deps chromium

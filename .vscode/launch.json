@@ -25,14 +25,6 @@
                 }
             ],
             "justMyCode": true
-        },
-        {
-            "name": "Debug test_process_profile_data",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/tests/test_process_profile_data.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
         }
     ]
 }
