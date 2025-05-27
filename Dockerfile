@@ -51,9 +51,6 @@ RUN playwright install chromium
 # Copy application code
 COPY . .
 
-# Create necessary directories and set proper permissions
-RUN mkdir -p /tmp/chrome-profile && \
-    chmod 755 /tmp/chrome-profile
 # Expose port
 EXPOSE 8000
 

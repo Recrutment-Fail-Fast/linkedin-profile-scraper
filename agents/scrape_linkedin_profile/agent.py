@@ -1,4 +1,4 @@
-from agents.scrape_linkedin_profile.browser import create_browser
+from agents.scrape_linkedin_profile.browser import  create_browser
 from .initial_actions import get_initial_actions
 from .prompts import task, override_system_message, extend_planner_system_message
 from models import Profile
@@ -15,11 +15,11 @@ llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.0)
 
 async def scrape_linkedin_profile_agent():
     """Scrape LinkedIn profile using browser automation agent."""
-    browser_session = None
     try:
         # Create browser session using existing Chrome profile
         print("🔄 Creating browser session with existing Chrome profile...")
         browser_session = await create_browser()
+
         
         # Create and run agent
         print("🤖 Creating browser agent...")
@@ -29,7 +29,7 @@ async def scrape_linkedin_profile_agent():
             browser_session=browser_session,
             controller=controller,
             enable_memory=False,
-            initial_actions=get_initial_actions(),
+            # initial_actions=get_initial_actions(),
             override_system_message=override_system_message,
             extend_planner_system_message=extend_planner_system_message
         )

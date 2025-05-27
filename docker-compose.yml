@@ -14,9 +14,6 @@ services:
       - DOCKER=true
       - DEBUG=true # Enable debug mode
     volumes:
-      # The named volume 'chrome-data' for /tmp/chrome-profile is removed as we are using the baked-in profile.
-      # If 'chrome-data' was used for other purposes, that specific mount should be re-evaluated.
-      # If you need other data to persist, define specific named volumes for those paths.
       - .:/app # Mount source code for live editing (good for development)
     restart: unless-stopped
     shm_size: '2gb' # Increase shared memory for Chrome
