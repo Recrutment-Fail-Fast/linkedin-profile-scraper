@@ -8,8 +8,7 @@ services:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      - CHROME_USER_DATA_DIR=/tmp/chrome-profile
-      - CHROME_PROFILE_DIRECTORY=Default
+      - L_AT_COOKIE=${L_AT_COOKIE}  # Add LinkedIn cookie
       - DOCKER=true
       - DEBUG=true # Enable debug mode
     volumes:
@@ -22,9 +21,3 @@ services:
       - SYS_ADMIN # Required for Chrome sandboxing
     # Override default command for debugging
     command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-# The named volume 'chrome-data' might no longer be needed if its sole purpose was the /tmp/chrome-profile mount.
-# If it's not used for anything else, it can be removed from this top-level 'volumes' section too.
-# For now, I will leave the definition here in case it was intended for other future use, but it won't be actively used by the linkedin-scraper service for the Chrome profile path we removed.
-volumes:
-  chrome-data:
